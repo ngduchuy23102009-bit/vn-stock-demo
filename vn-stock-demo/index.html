@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VN Stock Demo — Thị trường chứng khoán Việt Nam</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="logo">📈 VN <span>Stock Demo</span></div>
+  <nav>
+    <button class="nav-btn active" data-view="dashboard">Bảng giá</button>
+    <button class="nav-btn" data-view="watchlist">Watchlist</button>
+    <button class="nav-btn" data-view="portfolio">Danh mục</button>
+  </nav>
+  <div id="market-status" class="market-status">...</div>
+</header>
+
+<main>
+  <!-- ============ DASHBOARD ============ -->
+  <section id="view-dashboard">
+    <div class="indices" id="indices"></div>
+
+    <div class="toolbar">
+      <div class="tabs" id="floor-tabs">
+        <button class="tab active" data-floor="HOSE">HOSE</button>
+        <button class="tab" data-floor="HNX">HNX</button>
+        <button class="tab" data-floor="UPCOM">UPCOM</button>
+      </div>
+      <input id="search-box" type="text" placeholder="Tìm mã (VD: VNM, FPT...)">
+      <span class="updated" id="updated-at"></span>
+    </div>
+
+    <div class="table-wrap">
+      <table id="price-table">
+        <thead>
+          <tr>
+            <th>Mã</th><th>Giá</th><th>+/-</th><th>%</th>
+            <th>Trần</th><th>Sàn</th><th>Mở cửa</th>
+            <th>Cao</th><th>Thấp</th><th>KL</th><th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div id="loading" class="loading">Đang tải dữ liệu...</div>
+    </div>
+  </section>
+
+  <!-- ============ WATCHLIST ============ -->
+  <section id="view-watchlist" class="hidden">
+    <h2>⭐ Watchlist của bạn</h2>
+    <p class="hint">Nhấn vào biểu tượng ngôi sao trên bảng giá để thêm/bớt mã theo dõi. Dữ liệu lưu trong trình duyệt của bạn.</p>
+    <div class="table-wrap">
+      <table class="price-table-clone">
+        <thead><tr>
+          <th>Mã</th><th>Giá</th><th>+/-</th><th>%</th>
+          <th>Mở cửa</th><th>Cao</th><th>Thấp</th><th>KL</th><th></th>
+        </tr></thead>
+        <tbody id="watchlist-body"></tbody>
+      </table>
+      <div id="watchlist-empty" class="loading hidden">Chưa có mã nào trong watchlist.</div>
+    </div>
+  </section>
+
+  <!-- ============ PORTFOLIO (paper trading) ============ -->
+  <section id="view-portfolio" class="hidden">
+    <h2>💼 Danh mục giả lập</h2>
+    <div class="cash-bar">
+      <div>Tiền mặt: <b id="cash-amount">--</b> VND</div>
+      <div>Giá trị cổ phiếu: <b id="stock-value">--</b></div>
+      <div>Tổng tài sản: <b id="total-asset">--</b></div>
+      <div>Lãi/lỗ: <b id="pnl">--</b></div>
+    </div>
+
+    <div class="order-panel">
+      <h3>Đặt lệnh giả lập</h3>
+      <div class="order-form">
+        <label>Mã CP <input id="order-symbol" list="symbol-list" placeholder="VNM"></label>
+        <label>Hướng
+          <select id="order-side"><option value="BUY">Mua</option><option value="SELL">Bán</option></select>
+        </label>
+        <label>Giá <input id="order-price" type="number" step="0.05" min="0.1"></label>
+        <label>Khối lượng <input id="order-qty" type="number" step="100" min="100" value="100"></label>
+        <button id="place-order">Đặt lệnh</button>
+      </div>
+      <div id="order-msg" class="order-msg"></div>
+    </div>
+
+    <h3>⏳ Lệnh chờ khớp</h3>
+    <p class="hint">Lệnh sẽ được đối chiếu với sổ cung–cầu (best bid/ask quanh giá thị trường) mỗi lần cập nhật dữ liệu khi thị trường mở cửa.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Thời gian</th><th>Mã</th><th>Hướng</th><th>Giá đặt</th><th>KL còn lại</th><th>Đã khớp</th><th>Bid/Ask hiện tại</th><th></th></tr></thead>
+        <tbody id="pending-body"></tbody>
+      </table>
+      <div id="pending-empty" class="loading hidden">Không có lệnh nào đang chờ khớp.</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Mã</th><th>KL</th><th>Giá mua TB</th><th>Giá hiện tại</th>
+          <th>Giá trị</th><th>Lãi/lỗ</th><th>%</th><th></th>
+        </tr></thead>
+        <tbody id="portfolio-body"></tbody>
+      </table>
+      <div id="portfolio-empty" class="loading hidden">Chưa có cổ phiếu nào. Hãy đặt lệnh mua phía trên.</div>
+    </div>
+
+    <h3>Lịch sử lệnh</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Thời gian</th><th>Mã</th><th>Hướng</th><th>Giá</th><th>KL</th><th>Giá trị</th></tr></thead>
+        <tbody id="trades-body"></tbody>
+      </table>
+      <div id="trades-empty" class="loading hidden">Chưa có giao dịch nào.</div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ MODAL: chi tiết cổ phiếu ============ -->
+<div id="modal" class="modal hidden">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="detail-title">--</h2>
+      <div>
+        <span id="detail-price" class="detail-price">--</span>
+        <button class="close-btn" onclick="UI.closeModal()">✕</button>
+      </div>
+    </div>
+    <div class="chart-tabs">
+      <button class="chart-tab active" data-range="1M">1 tháng</button>
+      <button class="chart-tab" data-range="3M">3 tháng</button>
+      <button class="chart-tab" data-range="6M">6 tháng</button>
+      <button class="chart-tab" data-range="1Y">1 năm</button>
+    </div>
+    <canvas id="candle-chart" width="860" height="360"></canvas>
+    <div class="detail-stats" id="detail-stats"></div>
+  </div>
+</div>
+
+<datalist id="symbol-list"></datalist>
+<footer>Demo phi thương mại — dữ liệu từ API công khai VNDirect (api-finfo). Không phải khuyến nghị đầu tư.</footer>
+<script src="app.js"></script>
+</body>
+</html>
